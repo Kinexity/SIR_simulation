@@ -8,6 +8,8 @@ void Population::create_bond(uint_fast64_t member_1_index, uint_fast64_t member_
 void Population::infect() {
 	std::vector<std::shared_ptr<Individual>> first_infected;
 	std::sample(members.begin(), members.end(), std::back_inserter(first_infected), start_infected_number, std::mt19937{ std::random_device{}() });
+	simulation_stats.infected = start_infected_number;
+	simulation_stats.suspectible = members.size() - start_infected_number;
 	std::for_each(std::execution::par_unseq, first_infected.begin(), first_infected.end(), [&](std::shared_ptr<Individual> member) { member->infection_status = Status::Infected; });
 }
 
@@ -59,11 +61,6 @@ void Population::build_grid() {
 	bondable_members.clear();
 }
 
-bool Population::test_grid()
-{
-	return false;
-}
-
 void Population::load_grid(std::string filename) {
 	std::vector<size_t> grid_data;
 	std::fstream file;
@@ -103,32 +100,30 @@ void Population::save_grid(std::string filename) {
 	std::cout << "Grid saved to " << filename << '\n';
 }
 
-std::array<std::vector<int_fast64_t>, 4> Population::simulate() {
+std::array<std::vector<int_fast64_t>, status_count> Population::simulate() {
 	tc.start();
-	std::array<std::vector<int_fast64_t>, 4> result_stats;
-	auto trn_arr = [&](std::shared_ptr<Individual> elem) { return to_array(elem->get_status()); };
-	auto red_arr = [&](std::array<int_fast64_t, 4> a, std::array<int_fast64_t, 4> b) {
-		std::transform(std::execution::par_unseq, a.begin(), a.end(), b.begin(), a.begin(), std::plus<>());
-		return a;
-	};
+	std::array<std::vector<int_fast64_t>, status_count> result_stats;
 	size_t sim_time = 0;
 	auto update_arr = [&] {
-		auto res = std::transform_reduce(std::execution::par_unseq, members.begin(), members.end(), std::array<int_fast64_t, 4>{0}, red_arr, trn_arr);
 		std::cout << sim_time++;
-		for (int i = 0; i < 4; i++) {
-			std::cout << "	" << res[i];
-			result_stats[i].push_back(res[i]);
+		result_stats[0].push_back(simulation_stats.suspectible);
+		result_stats[1].push_back(simulation_stats.exposed);
+		result_stats[2].push_back(simulation_stats.infected);
+		result_stats[3].push_back(simulation_stats.recovered);
+		result_stats[4].push_back(simulation_stats.dead);
+		for (auto& vec: result_stats) {
+			std::cout << "	" << vec.back();
 		}
 		std::cout << '\n';
 	};
 	update_arr();
 	do {
-		if (result_stats[1].back() != 0) {
+		if (result_stats[2].back() != 0) {
 			std::for_each(std::execution::par_unseq, members.begin(), members.end(), [&](std::shared_ptr<Individual> elem) { elem->infect(); });
 		}
 		std::for_each(std::execution::par_unseq, members.begin(), members.end(), [&](std::shared_ptr<Individual> elem) { elem->update_status(); });
 		update_arr();
-	} while (result_stats[1].back() != 0);
+	} while (simulation_stats.exposed != 0 || simulation_stats.infected != 0);
 	tc.stop();
 	std::cout << "Simulation time: " << tc.measured_timespan().count() << '\n';
 	return result_stats;

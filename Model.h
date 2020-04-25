@@ -5,7 +5,9 @@
 enum class Model {
 	SIS,
 	SIR,
-	SEIR
+	SIRD,
+	SEIR,
+	SEIRD
 };
 
 #endif // !MODEL_H

@@ -1,4 +1,5 @@
 #pragma once
+inline constexpr size_t status_count = 5;
 #ifndef INDIVIDUAL_H
 #define INDIVIDUAL_H
 #include <vector>
@@ -11,24 +12,26 @@
 
 enum class Status {
 	Susceptible,
+	Exposed,
 	Infected,
 	Recovered,
-	Dead,
-	Exposed
+	Dead
 };
 
-inline std::array<int_fast64_t, 4> to_array(Status stat) {
+inline std::array<int_fast64_t, status_count> to_array(Status stat) {
 	switch (stat) {
 	case Status::Susceptible:
-		return { 1, 0, 0, 0 };
-	case Status::Infected:
-		return { 0, 1, 0, 0 };
-	case Status::Recovered:
-		return { 0, 0, 1, 0 };
-	case Status::Dead:
-		return { 0, 0, 0, 1 };
-	default:
-		return { 0, 0, 0, 0 };
+		return { 1, 0, 0, 0 , 0};
+	case Status::Exposed:	
+		return { 0, 1, 0, 0 , 0};
+	case Status::Infected:	
+		return { 0, 0, 1, 0 , 0};
+	case Status::Recovered:	
+		return { 0, 0, 0, 1 , 0};
+	case Status::Dead:		
+		return { 0, 0, 0, 0 , 1};
+	default:				
+		return { 0, 0, 0, 0 , 0};
 	}
 }
 
@@ -43,10 +46,8 @@ private:
 		bonded_members;
 	Status
 		infection_status = Status::Susceptible;
-	bool
+	std::atomic<bool>
 		positive = false;
-	std::mutex
-		mut_ex;
 	size_t
 		k,
 		members_infected = 0,

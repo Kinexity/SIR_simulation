@@ -51,6 +51,14 @@ private:
 		simulation_model_type;
 	std::vector<size_t>
 		bondable_members;
+	struct {
+		std::atomic<int_fast64_t>
+			suspectible = 0,
+			exposed = 0,
+			infected = 0,
+			recovered = 0,
+			dead = 0;
+	} simulation_stats;
 	void
 		create_bond(uint_fast64_t member_1_index, uint_fast64_t member_2_index),
 		infect();
@@ -62,9 +70,7 @@ public:
 		build_grid(),
 		save_grid(std::string filename),
 		load_grid(std::string filename);
-	bool
-		test_grid();
-	std::array<std::vector<int_fast64_t>, 4>
+	std::array<std::vector<int_fast64_t>, status_count>
 		simulate();
 };
 
