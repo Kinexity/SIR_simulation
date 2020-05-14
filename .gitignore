@@ -338,3 +338,7 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/VTune Profiler Results/SIR_simulation
+/My Inspector Results - SIR_simulation
+/grid_1000000_100.000000_5.000000.bin
+/grid_100000_100.000000_5.000000.bin

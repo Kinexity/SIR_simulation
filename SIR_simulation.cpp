@@ -10,7 +10,7 @@ namespace pt = matplotlibcpp;
 int main() {
 	std::array<std::vector<int_fast64_t>, status_count> res;
 	do {
-		Population pop{ Model::SEIRD, 100000, 1, 100, 5, {0.006, 0.06, 0.003, 0.1} };
+		Population pop{ Model::SIR, 1000000, 1, 100, 5, {0.0008, 0.0004, 0.003, 0.1} };
 		pop.initialize_simulation();
 		res = pop.simulate();
 	} while (res[3].back() < 400);
@@ -25,17 +25,15 @@ int main() {
 	std::string str[status_count] = { "y-", "C1-","r-","g-","k-" };
 	std::string legend[status_count] = { "Zagorożeni", "Narażeni","Zarażeni","Wyzdrowiali","Zmarli" };
 	std::string str_s = "b-";
-	if (true) {
-		for (int type = 0; type < status_count; type++) {
-			pt::/*named_*/plot(/*legend[type],*/ time_stamps, res[type], str[type]);
-		}
-	}
-	else {
-		for (int type = 0; type < status_count; type++) {
-			pt::named_semilogy(legend[type], time_stamps, res[type], str[type]);
-		}
-		pt::semilogy(time_stamps, sum, str_s);
+	for (int type = 0; type < status_count; type++) {
+		pt::/*named_*/plot(/*legend[type],*/ time_stamps, res[type], str[type]);
 	}
 	pt::legend();
 	pt::show();
+	//for (int type = 0; type < status_count; type++) {
+	//	pt::/*named_*/semilogy(/*legend[type],*/ time_stamps, res[type], str[type]);
+	//}
+	//pt::semilogy(time_stamps, sum, str_s);
+	//pt::legend();
+	//pt::show();
 }

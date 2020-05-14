@@ -8,12 +8,18 @@ Individual::Individual(Population& population_ref_arg, uint_fast64_t index_arg) 
 
 void Individual::create_bond(uint_fast64_t member_index) {
 	if (member_index != index) {
-		bonded_members.push_back(*population.members[member_index]);
+		bonded_members.push_back(*(population.members[member_index]));
 	}
 	if (bonded_members.size() == k) {
 		static std::mutex mtx;
 		std::unique_lock<std::mutex> lck(mtx);
 		std::erase(population.bondable_members, index);
+	}
+}
+
+void Individual::recreate_bond(uint_fast64_t member_index) {
+	if (member_index != index) {
+		bonded_members.push_back(*population.members[member_index]);
 	}
 }
 

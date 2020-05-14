@@ -4,10 +4,10 @@
 
 struct Disease {
 	double
-		infection_probability = 0.0,
+		infection_or_exposition_probability = 0.0,
 		recovery_probability = 0.0,
 		death_probability = 0.0,
-		exposition_probability = 0.0;
+		exposition_to_infection_probability = 0.0;
 };
 
 #endif // !DISEASE_H

@@ -57,6 +57,7 @@ public:
 	~Individual() = default;
 	void
 		create_bond(uint_fast64_t member_index),
+		recreate_bond(uint_fast64_t member_index),
 		create_bonds(),
 		infect(),
 		update_status(),

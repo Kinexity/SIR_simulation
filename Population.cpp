@@ -14,10 +14,11 @@ void Population::infect() {
 }
 
 Population::Population(Model simulation_model_type_arg, size_t population_size_arg, size_t start_infected_number_arg, double k_mean_arg, double k_stddev_arg, Disease disease_stats_arg) :
-	simulation_model_type(simulation_model_type_arg), population_size(population_size_arg), start_infected_number(start_infected_number_arg), disease_stats(disease_stats_arg), rnd_norm(k_mean_arg, k_stddev_arg) {}
+	simulation_model_type(simulation_model_type_arg), population_size(population_size_arg), start_infected_number(start_infected_number_arg), disease_stats(disease_stats_arg), rnd_norm(k_mean_arg, k_stddev_arg),
+	grid_file_name(std::string("grid_") + std::to_string(population_size) + "_" + std::to_string(k_mean_arg) + "_" + std::to_string(k_stddev_arg) + ".bin") {}
 
 void Population::initialize_simulation() {
-	if (false) {
+	if (!std::filesystem::exists(grid_file_name)) {
 		tc.start();
 		members.clear();
 		for (size_t index = 0; index < population_size; index++) {
@@ -30,12 +31,12 @@ void Population::initialize_simulation() {
 		build_grid();
 		tc.stop();
 		std::cout << "Bonding time: " << tc.measured_timespan().count() << '\n';
-		save_grid("grid.bin");
+		save_grid(grid_file_name);
 	}
 	else {
 		tc.start();
 		members.clear();
-		load_grid("grid.bin");
+		load_grid(grid_file_name);
 		infect();
 		tc.stop();
 		std::cout << "Loading time: " << tc.measured_timespan().count() << '\n';
@@ -69,18 +70,21 @@ void Population::load_grid(std::string filename) {
 	file.read((char*)grid_data.data(), grid_data.size() * sizeof(size_t));
 	file.close();
 	members.resize(grid_data[0]);
+	std::vector<size_t> members_indices;
+	members_indices.resize(members.size());
+	std::iota(members_indices.begin(), members_indices.end(), 0);
 	std::vector<std::vector<size_t>> bonded_members;
 	for (size_t index = 1; index < grid_data.size(); index += (grid_data[index] + 1)) {
 		bonded_members.push_back(std::vector<size_t>{grid_data.begin() + index + 1, grid_data.begin() + index + grid_data[index] + 1});
 	}
-	for (size_t member_index = 0; member_index < members.size(); member_index++) {
+	std::for_each(std::execution::par_unseq, members_indices.begin(), members_indices.end(), [&](auto member_index) {
 		members[member_index] = std::make_shared<Individual>(*this, bonded_members[member_index].size());
-	}
-	for (size_t member_index = 0; member_index < members.size(); member_index++) {
+	});
+	std::for_each(std::execution::par_unseq, members_indices.begin(), members_indices.end(), [&](auto member_index) {
 		for (auto bond_member_index : bonded_members[member_index]) {
-			members[member_index]->create_bond(bond_member_index);
+			members[member_index]->recreate_bond(bond_member_index);
 		}
-	}
+	});
 	std::cout << "Grid loaded from " << filename << '\n';
 }
 
@@ -89,7 +93,7 @@ void Population::save_grid(std::string filename) {
 	grid_data.push_back(members.size());
 	for (auto member : members) {
 		grid_data.push_back(member->bonded_members.size());
-		for (auto& bond: member->bonded_members) {
+		for (auto& bond : member->bonded_members) {
 			grid_data.push_back(bond.get().index);
 		}
 	}
@@ -111,7 +115,7 @@ std::array<std::vector<int_fast64_t>, status_count> Population::simulate() {
 		result_stats[2].push_back(simulation_stats.infected);
 		result_stats[3].push_back(simulation_stats.recovered);
 		result_stats[4].push_back(simulation_stats.dead);
-		for (auto& vec: result_stats) {
+		for (auto& vec : result_stats) {
 			std::cout << "	" << vec.back();
 		}
 		std::cout << '\n';

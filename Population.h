@@ -11,11 +11,11 @@
 #include <iostream>
 #include <set>
 #include <fstream>
+#include <string>
 #include <filesystem>
 #include "Individual.h"
 #include "Model.h"
 #include "Disease.h"
-#include "C_Random.h"
 #include "C_Time_Counter.h"
 
 class Population {
@@ -51,6 +51,8 @@ private:
 		simulation_model_type;
 	std::vector<size_t>
 		bondable_members;
+	const std::string
+		grid_file_name;
 	struct {
 		std::atomic<int_fast64_t>
 			suspectible = 0,
