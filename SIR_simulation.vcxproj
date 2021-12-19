@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="packages\vcpkg.D.Download.vcpkg.1.0.0\build\native\vcpkg.D.Download.vcpkg.props" Condition="Exists('packages\vcpkg.D.Download.vcpkg.1.0.0\build\native\vcpkg.D.Download.vcpkg.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -48,7 +49,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 19.1</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <UseIntelMKL>Parallel</UseIntelMKL>
@@ -157,21 +158,26 @@
       <ConformanceMode>true</ConformanceMode>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>C:\Users\26kuba05\source\repos\PureCPPLib\PureCPPLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\26kub\source\repos\PureCPPLib\PureCPPLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <LlvmTransitionalOption>NextGenComprehensiveDiagnostics</LlvmTransitionalOption>
       <UseMSVC>true</UseMSVC>
       <CCppSupport>Cpp17Support</CCppSupport>
+      <CallingConvention>FastCall</CallingConvention>
+      <Optimization>Full</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);D:\Download\vcpkg\buildtrees\matplotplusplus\x64-windows-rel\source\3rd_party\nodesoup.lib;C:\Users\26kub\source\repos\PureCPPLib\PureCPPLib\x64\Release\xoshiro256pp.obj</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Download\vcpkg\installed\x64-windows\debug\lib\Matplot++\nodesoup.lib;C:\Users\26kub\source\repos\PureCPPLib\;D:\Download\vcpkg\installed\x64-windows\lib\Matplot++</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Disease.cpp" />
     <ClCompile Include="Individual.cpp" />
     <ClCompile Include="Population.cpp" />
     <ClCompile Include="SIR_analytical.cpp" />
@@ -189,14 +195,13 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="packages\boost.1.71.0.0\build\boost.targets" Condition="Exists('packages\boost.1.71.0.0\build\boost.targets')" />
-    <Import Project="packages\matplotlib-cpp.1.0.0.62\build\native\matplotlib-cpp.targets" Condition="Exists('packages\matplotlib-cpp.1.0.0.62\build\native\matplotlib-cpp.targets')" />
+    <Import Project="packages\vcpkg.D.Download.vcpkg.1.0.0\build\native\vcpkg.D.Download.vcpkg.targets" Condition="Exists('packages\vcpkg.D.Download.vcpkg.1.0.0\build\native\vcpkg.D.Download.vcpkg.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>Ten projekt zawiera odwołania do pakietów NuGet, których nie ma na tym komputerze. Użyj przywracania pakietów NuGet, aby je pobrać. Aby uzyskać więcej informacji, zobacz http://go.microsoft.com/fwlink/?LinkID=322105. Brakujący plik: {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('packages\boost.1.71.0.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost.1.71.0.0\build\boost.targets'))" />
-    <Error Condition="!Exists('packages\matplotlib-cpp.1.0.0.62\build\native\matplotlib-cpp.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\matplotlib-cpp.1.0.0.62\build\native\matplotlib-cpp.targets'))" />
+    <Error Condition="!Exists('packages\vcpkg.D.Download.vcpkg.1.0.0\build\native\vcpkg.D.Download.vcpkg.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\vcpkg.D.Download.vcpkg.1.0.0\build\native\vcpkg.D.Download.vcpkg.props'))" />
+    <Error Condition="!Exists('packages\vcpkg.D.Download.vcpkg.1.0.0\build\native\vcpkg.D.Download.vcpkg.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\vcpkg.D.Download.vcpkg.1.0.0\build\native\vcpkg.D.Download.vcpkg.targets'))" />
   </Target>
 </Project>

@@ -6,6 +6,7 @@
 #include <memory>
 #include <algorithm>
 #include <numeric>
+#include <utility>
 #include <execution>
 #include <array>
 #include <iostream>
@@ -17,6 +18,7 @@
 #include "Model.h"
 #include "Disease.h"
 #include "C_Time_Counter.h"
+#include "xoshiro256pp.h"
 
 class Population {
 	friend class Individual;
@@ -24,16 +26,13 @@ class Population {
 private:
 	class {
 	private:
-		std::random_device rd;
-		std::mt19937 gen{ rd() };
-		std::uniform_real_distribution<> uni{ 0.0, std::nextafter(1.0, 2.0) };
+		xoshiro256pp gen;
 	public:
-		double operator()() { return uni(gen); }
+		double operator()() { return double(gen())/std::numeric_limits<uint64_t>::max(); }
 	} rnd_uni;
 	class internal_rnd_norm {
 	private:
-		std::random_device rd;
-		std::mt19937 gen{ rd() };
+		xoshiro256pp gen;
 		std::normal_distribution<double> norm;
 	public:
 		internal_rnd_norm(double k_mean, double k_stddev);
@@ -45,7 +44,7 @@ private:
 		disease_stats;
 	const size_t
 		population_size;
-	const size_t 
+	const size_t
 		start_infected_number;
 	const Model
 		simulation_model_type;
@@ -64,8 +63,11 @@ private:
 	void
 		create_bond(uint_fast64_t member_1_index, uint_fast64_t member_2_index),
 		infect();
+	PCL::C_Time_Counter
+		tc;
+	std::atomic<uint64_t> sum;
 public:
-	Population(Model simulation_model_type_arg, size_t population_size_arg, size_t patient_zero_number_arg, double k_mean, double k_stddev, Disease disease_stats_arg);
+	Population(Model simulation_model_type_arg, size_t population_size_arg, size_t patient_zero_number_arg, double k_mean, double k_stddev, Disease_ext disease_stats_arg);
 	~Population() = default;
 	void
 		initialize_simulation(),
@@ -73,7 +75,8 @@ public:
 		save_grid(std::string filename),
 		load_grid(std::string filename);
 	std::array<std::vector<int_fast64_t>, status_count>
-		simulate();
+		simulate(std::stringstream& ss);
+	uint64_t get() { return sum; };
 };
 
 #endif // !POPULATION_H

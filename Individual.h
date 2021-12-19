@@ -9,6 +9,7 @@ inline constexpr size_t status_count = 5;
 #include <intrin.h>
 #include <iterator>
 #include "Population.h"
+#include "xoshiro256pp.h"
 
 enum class Status {
 	Susceptible,
@@ -38,6 +39,8 @@ inline std::array<int_fast64_t, status_count> to_array(Status stat) {
 class Individual {
 	friend class Population;
 private:
+	xoshiro256pp
+		rnd;
 	Population&
 		population;
 	const size_t
@@ -51,7 +54,7 @@ private:
 	size_t
 		k,
 		members_infected = 0,
-		days_infected = 0;
+		days_to_state_change = 0;
 public:
 	Individual(Population& population_ref_arg, uint_fast64_t index_arg);
 	~Individual() = default;
@@ -60,6 +63,7 @@ public:
 		recreate_bond(uint_fast64_t member_index),
 		create_bonds(),
 		infect(),
+		initial_infect(),
 		update_status(),
 		clear_bonds();
 	bool

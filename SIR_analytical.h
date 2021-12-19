@@ -1,7 +1,6 @@
 #pragma once
 #ifndef SIR_ANALYTICAL_H
 #define SIR_ANALYTICAL_H
-#include <mkl.h>
 #include <functional>
 #include <algorithm>
 #include <execution>

@@ -1,4 +1,6 @@
 #include "Population.h"
+#include <utility>
+#include <format>
 
 void Population::create_bond(uint_fast64_t member_1_index, uint_fast64_t member_2_index) {
 	members[member_1_index]->create_bond(member_2_index);
@@ -10,12 +12,12 @@ void Population::infect() {
 	std::sample(members.begin(), members.end(), std::back_inserter(first_infected), start_infected_number, std::mt19937{ std::random_device{}() });
 	simulation_stats.infected = start_infected_number;
 	simulation_stats.suspectible = members.size() - start_infected_number;
-	std::for_each(std::execution::par_unseq, first_infected.begin(), first_infected.end(), [&](std::shared_ptr<Individual> member) { member->infection_status = Status::Infected; });
+	std::for_each(std::execution::par_unseq, first_infected.begin(), first_infected.end(), [&](std::shared_ptr<Individual> member) { member->initial_infect(); });
 }
 
-Population::Population(Model simulation_model_type_arg, size_t population_size_arg, size_t start_infected_number_arg, double k_mean_arg, double k_stddev_arg, Disease disease_stats_arg) :
-	simulation_model_type(simulation_model_type_arg), population_size(population_size_arg), start_infected_number(start_infected_number_arg), disease_stats(disease_stats_arg), rnd_norm(k_mean_arg, k_stddev_arg),
-	grid_file_name(std::string("grid_") + std::to_string(population_size) + "_" + std::to_string(k_mean_arg) + "_" + std::to_string(k_stddev_arg) + ".bin") {}
+Population::Population(Model simulation_model_type_arg, size_t population_size_arg, size_t start_infected_number_arg, double k_mean_arg, double k_stddev_arg, Disease_ext disease_stats_arg) :
+	simulation_model_type(simulation_model_type_arg), population_size(population_size_arg), start_infected_number(start_infected_number_arg), disease_stats(dis_int_conv(disease_stats_arg)), rnd_norm(k_mean_arg, k_stddev_arg),
+	grid_file_name(std::string("grid_") + std::format("{:x}", std::hash<std::string>{}(std::to_string(population_size) + "_" + std::to_string(k_mean_arg) + "_" + std::to_string(k_stddev_arg))) + ".bin") {}
 
 void Population::initialize_simulation() {
 	if (!std::filesystem::exists(grid_file_name)) {
@@ -104,11 +106,13 @@ void Population::save_grid(std::string filename) {
 	std::cout << "Grid saved to " << filename << '\n';
 }
 
-std::array<std::vector<int_fast64_t>, status_count> Population::simulate() {
+std::array<std::vector<int_fast64_t>, status_count> Population::simulate(std::stringstream& ss) {
 	tc.start();
+	ss.clear();
 	std::array<std::vector<int_fast64_t>, status_count> result_stats;
 	size_t sim_time = 0;
 	auto update_arr = [&] {
+		ss << sim_time;
 		std::cout << sim_time++;
 		result_stats[0].push_back(simulation_stats.suspectible);
 		result_stats[1].push_back(simulation_stats.exposed);
@@ -116,8 +120,10 @@ std::array<std::vector<int_fast64_t>, status_count> Population::simulate() {
 		result_stats[3].push_back(simulation_stats.recovered);
 		result_stats[4].push_back(simulation_stats.dead);
 		for (auto& vec : result_stats) {
+			ss << "	" << vec.back();
 			std::cout << "	" << vec.back();
 		}
+		ss << '\n';
 		std::cout << '\n';
 	};
 	update_arr();
@@ -127,7 +133,7 @@ std::array<std::vector<int_fast64_t>, status_count> Population::simulate() {
 		}
 		std::for_each(std::execution::par_unseq, members.begin(), members.end(), [&](std::shared_ptr<Individual> elem) { elem->update_status(); });
 		update_arr();
-	} while (simulation_stats.exposed != 0 || simulation_stats.infected != 0);
+	} while (!(simulation_stats.exposed == 0 && simulation_stats.infected == 0 || simulation_stats.suspectible == 0));
 	tc.stop();
 	std::cout << "Simulation time: " << tc.measured_timespan().count() << '\n';
 	return result_stats;

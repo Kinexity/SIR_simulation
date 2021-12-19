@@ -3,17 +3,22 @@
 
 #include <iostream>
 #include <fstream>
-#include <matplotlibcpp.h>
 #include "Population.h"
-namespace pt = matplotlibcpp;
+#include <matplot/matplot.h>
+#include <sstream>
+//namespace pt = matplotlibcpp;
 
 int main() {
 	std::array<std::vector<int_fast64_t>, status_count> res;
+	std::stringstream ss;
+	size_t N = 100000;
 	do {
-		Population pop{ Model::SIR, 1000000, 1, 100, 5, {0.0008, 0.0004, 0.003, 0.1} };
+		ss.clear();
+		Population pop{ Model::SIR, N, 1, 100, 5, {0.0004, 0.004, 0.003, 0.1} };
 		pop.initialize_simulation();
-		res = pop.simulate();
-	} while (res[3].back() < 400);
+		res = pop.simulate(ss);
+		std::cout << (double)pop.get()/(N - res[0].back()) << '\n';
+	} while (res[3].back() < std::sqrt(N) && false);
 	std::vector<int_fast64_t> time_stamps;
 	std::vector<int_fast64_t> sum;
 	sum.resize(res[0].size());
@@ -25,11 +30,15 @@ int main() {
 	std::string str[status_count] = { "y-", "C1-","r-","g-","k-" };
 	std::string legend[status_count] = { "Zagorożeni", "Narażeni","Zarażeni","Wyzdrowiali","Zmarli" };
 	std::string str_s = "b-";
-	for (int type = 0; type < status_count; type++) {
-		pt::/*named_*/plot(/*legend[type],*/ time_stamps, res[type], str[type]);
-	}
-	pt::legend();
-	pt::show();
+	std::cout << std::filesystem::current_path();
+	std::fstream f("sim_data.txt", std::ios::trunc | std::ios::out);
+	f << ss.str();
+	//for (int type = 0; type < status_count; type++) {
+	//	matplot::plot(/*legend[type],*/ time_stamps, res[type], str[type]);
+	//}
+	//matplot::show();
+	//pt::legend();
+	//pt::show();
 	//for (int type = 0; type < status_count; type++) {
 	//	pt::/*named_*/semilogy(/*legend[type],*/ time_stamps, res[type], str[type]);
 	//}
