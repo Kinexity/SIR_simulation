@@ -81,12 +81,12 @@ void Population::load_grid(std::string filename) {
 	}
 	std::for_each(std::execution::par_unseq, members_indices.begin(), members_indices.end(), [&](auto member_index) {
 		members[member_index] = std::make_shared<Individual>(*this, bonded_members[member_index].size());
-	});
+		});
 	std::for_each(std::execution::par_unseq, members_indices.begin(), members_indices.end(), [&](auto member_index) {
 		for (auto bond_member_index : bonded_members[member_index]) {
 			members[member_index]->recreate_bond(bond_member_index);
 		}
-	});
+		});
 	std::cout << "Grid loaded from " << filename << '\n';
 }
 
@@ -106,7 +106,7 @@ void Population::save_grid(std::string filename) {
 	std::cout << "Grid saved to " << filename << '\n';
 }
 
-std::array<std::vector<int_fast64_t>, status_count> Population::simulate(std::stringstream& ss) {
+std::array<std::vector<int_fast64_t>, status_count> Population::simulate(std::stringstream& ss, std::stringstream& ss2) {
 	tc.start();
 	ss.clear();
 	std::array<std::vector<int_fast64_t>, status_count> result_stats;
@@ -127,15 +127,20 @@ std::array<std::vector<int_fast64_t>, status_count> Population::simulate(std::st
 		std::cout << '\n';
 	};
 	update_arr();
+	auto last = members.end();
 	do {
 		if (result_stats[2].back() != 0) {
-			std::for_each(std::execution::par_unseq, members.begin(), members.end(), [&](std::shared_ptr<Individual> elem) { elem->infect(); });
+			std::for_each(std::execution::par_unseq, members.begin(), last, [&](std::shared_ptr<Individual> elem) { elem->infect(); });
 		}
-		std::for_each(std::execution::par_unseq, members.begin(), members.end(), [&](std::shared_ptr<Individual> elem) { elem->update_status(); });
+		std::for_each(std::execution::par_unseq, members.begin(), last, [&](std::shared_ptr<Individual> elem) { elem->update_status(); });
 		update_arr();
+		last = std::remove_if(std::execution::par_unseq, members.begin(), last, [](std::shared_ptr<Individual>& i) {return i->get_status() == Status::Recovered; });
 	} while (!(simulation_stats.exposed == 0 && simulation_stats.infected == 0 || simulation_stats.suspectible == 0));
 	tc.stop();
 	std::cout << "Simulation time: " << tc.measured_timespan().count() << '\n';
+	for (auto& member : members) {
+		ss2 << member->members_infected << '\n';
+	}
 	return result_stats;
 }
 

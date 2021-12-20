@@ -65,7 +65,6 @@ private:
 		infect();
 	PCL::C_Time_Counter
 		tc;
-	std::atomic<uint64_t> sum;
 public:
 	Population(Model simulation_model_type_arg, size_t population_size_arg, size_t patient_zero_number_arg, double k_mean, double k_stddev, Disease_ext disease_stats_arg);
 	~Population() = default;
@@ -75,8 +74,7 @@ public:
 		save_grid(std::string filename),
 		load_grid(std::string filename);
 	std::array<std::vector<int_fast64_t>, status_count>
-		simulate(std::stringstream& ss);
-	uint64_t get() { return sum; };
+		simulate(std::stringstream& ss, std::stringstream& ss2);
 };
 
 #endif // !POPULATION_H

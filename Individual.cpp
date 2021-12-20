@@ -23,7 +23,6 @@ void Individual::initial_infect() {
 	infection_status = Status::Infected;
 	auto drawn = (double)rnd() / std::numeric_limits<uint64_t>::max();
 	days_to_state_change = std::ceil(std::log(drawn) / population.disease_stats.recovery_probability_log);
-	population.sum += days_to_state_change;
 }
 
 void Individual::recreate_bond(uint_fast64_t member_index) {
@@ -121,7 +120,6 @@ void Individual::update_status() {
 		}
 		auto drawn = (double)rnd() / std::numeric_limits<uint64_t>::max();
 		days_to_state_change = std::ceil(std::log(drawn) / population.disease_stats.recovery_probability_log);
-		population.sum += days_to_state_change;
 		//std::cout << (std::to_string(days_to_state_change) + "\n");
 	}
 }

@@ -10,14 +10,13 @@
 
 int main() {
 	std::array<std::vector<int_fast64_t>, status_count> res;
-	std::stringstream ss;
-	size_t N = 1000000;
+	std::stringstream ss, ss2;
+	size_t N = 10000000;
 	do {
 		ss.clear();
 		Population pop{ Model::SIR, N, 10, 100, 5, {0.0004, 0.004, 0.003, 0.1} };
 		pop.initialize_simulation();
-		res = pop.simulate(ss);
-		std::cout << (double)pop.get()/(N - res[0].back()) << '\n';
+		res = pop.simulate(ss, ss2);
 	} while (res[3].back() < std::sqrt(N) && false);
 	std::vector<int_fast64_t> time_stamps;
 	std::vector<int_fast64_t> sum;
@@ -31,18 +30,6 @@ int main() {
 	std::string legend[status_count] = { "Zagorożeni", "Narażeni","Zarażeni","Wyzdrowiali","Zmarli" };
 	std::string str_s = "b-";
 	std::cout << std::filesystem::current_path();
-	std::fstream f("sim_data.txt", std::ios::trunc | std::ios::out);
-	f << ss.str();
-	//for (int type = 0; type < status_count; type++) {
-	//	matplot::plot(/*legend[type],*/ time_stamps, res[type], str[type]);
-	//}
-	//matplot::show();
-	//pt::legend();
-	//pt::show();
-	//for (int type = 0; type < status_count; type++) {
-	//	pt::/*named_*/semilogy(/*legend[type],*/ time_stamps, res[type], str[type]);
-	//}
-	//pt::semilogy(time_stamps, sum, str_s);
-	//pt::legend();
-	//pt::show();
+	std::fstream("sim_data.txt", std::ios::trunc | std::ios::out) << ss.str();
+	std::fstream("sim_histo_data.txt", std::ios::trunc | std::ios::out) << ss2.str();
 }

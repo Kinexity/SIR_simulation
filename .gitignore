@@ -344,3 +344,5 @@ healthchecksdb
 /grid_100000_100.000000_5.000000.bin
 *.bin
 *.csv
+/sim_histo_data.txt
+/sim_data.txt
