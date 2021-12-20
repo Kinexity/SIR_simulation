@@ -77,16 +77,15 @@ void Individual::clear_bonds() {
 
 void Individual::update_status() {
 	if (infection_status == Status::Infected || infection_status == Status::Exposed) {
-		auto drawn = (double)rnd() / std::numeric_limits<uint64_t>::max();
 		if (--days_to_state_change == 0) {
 			if (infection_status == Status::Infected) {
-				if ((population.simulation_model_type == Model::SIRD || population.simulation_model_type == Model::SEIRD) && drawn < population.disease_stats.death_probability) {
+				if ((population.simulation_model_type == Model::SIRD || population.simulation_model_type == Model::SEIRD)) {
 					infection_status = Status::Dead;
 					population.simulation_stats.infected--;
 					population.simulation_stats.dead++;
 					bonded_members.clear();
 				}
-				else if (drawn < population.disease_stats.death_probability + population.disease_stats.recovery_probability) {
+				else if (true) {
 					if (population.simulation_model_type == Model::SIS) {
 						infection_status = Status::Susceptible;
 						population.simulation_stats.infected--;
@@ -102,7 +101,7 @@ void Individual::update_status() {
 				}
 			}
 			else {
-				if (drawn < population.disease_stats.exposition_to_infection_probability) {
+				if (true) {
 					infection_status = Status::Infected;
 					population.simulation_stats.exposed--;
 					population.simulation_stats.infected++;

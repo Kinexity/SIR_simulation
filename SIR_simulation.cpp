@@ -11,10 +11,10 @@
 int main() {
 	std::array<std::vector<int_fast64_t>, status_count> res;
 	std::stringstream ss;
-	size_t N = 100000;
+	size_t N = 1000000;
 	do {
 		ss.clear();
-		Population pop{ Model::SIR, N, 1, 100, 5, {0.0004, 0.004, 0.003, 0.1} };
+		Population pop{ Model::SIR, N, 10, 100, 5, {0.0004, 0.004, 0.003, 0.1} };
 		pop.initialize_simulation();
 		res = pop.simulate(ss);
 		std::cout << (double)pop.get()/(N - res[0].back()) << '\n';
