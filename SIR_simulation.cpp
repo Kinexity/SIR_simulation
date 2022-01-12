@@ -10,13 +10,13 @@
 
 int main() {
 	std::array<std::vector<int_fast64_t>, status_count> res;
-	std::stringstream ss, ss2;
+	std::stringstream ss;
 	size_t N = 10000000;
 	do {
 		ss.clear();
 		Population pop{ Model::SIR, N, 10, 100, 5, {0.0004, 0.004, 0.003, 0.1} };
 		pop.initialize_simulation();
-		res = pop.simulate(ss, ss2);
+		res = pop.simulate(ss);
 	} while (res[3].back() < std::sqrt(N) && false);
 	std::vector<int_fast64_t> time_stamps;
 	std::vector<int_fast64_t> sum;
@@ -31,5 +31,4 @@ int main() {
 	std::string str_s = "b-";
 	std::cout << std::filesystem::current_path();
 	std::fstream("sim_data.txt", std::ios::trunc | std::ios::out) << ss.str();
-	std::fstream("sim_histo_data.txt", std::ios::trunc | std::ios::out) << ss2.str();
 }

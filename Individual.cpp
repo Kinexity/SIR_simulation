@@ -3,6 +3,11 @@
 #include <set>
 #include <string>
 
+template <class T>
+double uni_fast(T var) {
+	return double(var) / std::numeric_limits<T>::max();
+}
+
 Individual::Individual(Population& population_ref_arg, uint_fast64_t index_arg) :
 	population(population_ref_arg), index(index_arg) {
 	k = std::max(population.rnd_norm(), size_t(1));
@@ -19,9 +24,18 @@ void Individual::create_bond(uint_fast64_t member_index) {
 	}
 }
 
+void Individual::decrement_infected_neighbours() {
+	infected_neighbours--;
+}
+
+void Individual::increment_infected_neighbours() {
+	infected_neighbours++;
+}
+
 void Individual::initial_infect() {
 	infection_status = Status::Infected;
 	auto drawn = (double)rnd() / std::numeric_limits<uint64_t>::max();
+	std::for_each(std::execution::par_unseq, bonded_members.begin(), bonded_members.end(), [&](Individual& elem) { elem.increment_infected_neighbours();  });
 	days_to_state_change = std::ceil(std::log(drawn) / population.disease_stats.recovery_probability_log);
 }
 
@@ -82,6 +96,7 @@ void Individual::update_status() {
 					infection_status = Status::Dead;
 					population.simulation_stats.infected--;
 					population.simulation_stats.dead++;
+					std::for_each(std::execution::par_unseq, bonded_members.begin(), bonded_members.end(), [&](Individual& elem) { elem.decrement_infected_neighbours();  });
 					bonded_members.clear();
 				}
 				else if (true) {
@@ -98,10 +113,12 @@ void Individual::update_status() {
 					}
 					positive = false;
 				}
+				std::for_each(std::execution::par_unseq, bonded_members.begin(), bonded_members.end(), [&](Individual& elem) { elem.decrement_infected_neighbours();  });
 			}
 			else {
 				if (true) {
 					infection_status = Status::Infected;
+					std::for_each(std::execution::par_unseq, bonded_members.begin(), bonded_members.end(), [&](Individual& elem) { elem.increment_infected_neighbours();  });
 					population.simulation_stats.exposed--;
 					population.simulation_stats.infected++;
 				}
@@ -113,32 +130,26 @@ void Individual::update_status() {
 		if (population.simulation_model_type != Model::SEIR && population.simulation_model_type != Model::SEIRD) {
 			infection_status = Status::Infected;
 			population.simulation_stats.infected++;
+			std::for_each(std::execution::par_unseq, bonded_members.begin(), bonded_members.end(), [&](Individual& elem) { elem.increment_infected_neighbours();  });
 		}
 		else {
 			infection_status = Status::Exposed;
 			population.simulation_stats.exposed++;
 		}
-		auto drawn = (double)rnd() / std::numeric_limits<uint64_t>::max();
+		auto drawn = uni_fast(rnd());
 		days_to_state_change = std::ceil(std::log(drawn) / population.disease_stats.recovery_probability_log);
 		//std::cout << (std::to_string(days_to_state_change) + "\n");
 	}
-}
-
-bool Individual::set_positive() {
-	return !std::exchange((bool&)positive, true);
-}
-
-bool Individual::try_infect() {
-	return get_status() == Status::Susceptible && population.rnd_uni() < population.disease_stats.infection_or_exposition_probability && set_positive();
 }
 
 Status Individual::get_status() {
 	return infection_status;
 }
 
-void Individual::infect() {
-	if (infection_status == Status::Infected) {
-		members_infected += std::transform_reduce(std::execution::par_unseq, bonded_members.begin(), bonded_members.end(), size_t(), std::plus<size_t>(), [&](Individual& elem)->size_t { return (elem.try_infect() ? 1 : 0);  });
+void Individual::try_to_get_infected() {
+	if (infection_status == Status::Susceptible && infected_neighbours > 0) {
+		auto prob = uni_fast(rnd());
+		positive = (prob < 1 - std::pow(1 - population.disease_stats.infection_or_exposition_probability, infected_neighbours));
 		auto is_SS = (population.simulation_model_type == Model::SIS);
 		std::erase_if(bonded_members, [&](Individual& elem) {
 			Status st = elem.get_status();

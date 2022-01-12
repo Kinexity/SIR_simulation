@@ -74,7 +74,7 @@ public:
 		save_grid(std::string filename),
 		load_grid(std::string filename);
 	std::array<std::vector<int_fast64_t>, status_count>
-		simulate(std::stringstream& ss, std::stringstream& ss2);
+		simulate(std::stringstream& ss);
 };
 
 #endif // !POPULATION_H

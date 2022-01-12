@@ -22,17 +22,17 @@ enum class Status {
 inline std::array<int_fast64_t, status_count> to_array(Status stat) {
 	switch (stat) {
 	case Status::Susceptible:
-		return { 1, 0, 0, 0 , 0};
-	case Status::Exposed:	
-		return { 0, 1, 0, 0 , 0};
-	case Status::Infected:	
-		return { 0, 0, 1, 0 , 0};
-	case Status::Recovered:	
-		return { 0, 0, 0, 1 , 0};
-	case Status::Dead:		
-		return { 0, 0, 0, 0 , 1};
-	default:				
-		return { 0, 0, 0, 0 , 0};
+		return { 1, 0, 0, 0 , 0 };
+	case Status::Exposed:
+		return { 0, 1, 0, 0 , 0 };
+	case Status::Infected:
+		return { 0, 0, 1, 0 , 0 };
+	case Status::Recovered:
+		return { 0, 0, 0, 1 , 0 };
+	case Status::Dead:
+		return { 0, 0, 0, 0 , 1 };
+	default:
+		return { 0, 0, 0, 0 , 0 };
 	}
 }
 
@@ -49,12 +49,15 @@ private:
 		bonded_members;
 	Status
 		infection_status = Status::Susceptible;
-	std::atomic<bool>
+	bool
 		positive = false;
 	size_t
 		k,
-		members_infected = 0,
 		days_to_state_change = 0;
+	std::atomic<size_t>
+		infected_neighbours = 0;
+	size_t
+		infected_neighbours_old = 0;
 public:
 	Individual(Population& population_ref_arg, uint_fast64_t index_arg);
 	~Individual() = default;
@@ -62,13 +65,12 @@ public:
 		create_bond(uint_fast64_t member_index),
 		recreate_bond(uint_fast64_t member_index),
 		create_bonds(),
-		infect(),
+		try_to_get_infected(),
 		initial_infect(),
 		update_status(),
-		clear_bonds();
-	bool
-		set_positive(),
-		try_infect();
+		clear_bonds(),
+		increment_infected_neighbours(),
+		decrement_infected_neighbours();
 	Status
 		get_status();
 };
